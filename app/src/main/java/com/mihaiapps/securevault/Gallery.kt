@@ -59,13 +59,7 @@ class Gallery : Fragment() {
             }
             NavHostFragment.findNavController(this).navigate(R.id.action_gallery_to_galleryViewPagerFragment, args)
 
-//            val galleryViewPagerFragment = GalleryViewPagerFragment.newInstance(position, data)
-//            fragmentManager!!
-//                    .beginTransaction()
-//                    .addSharedElement(imageView,ViewCompat.getTransitionName(imageView)!!)
-//                    .addToBackStack(TAG)
-//                    .replace(R.id.content, galleryViewPagerFragment)
-//                    .commit()
+
             Log.d("mainActivity", "addOnItemTouchListener")
         }
         recylerView.adapter =mAdapter

@@ -38,10 +38,13 @@
         android:id="@+id/gallery"
         android:name="com.mihaiapps.securevault.Gallery"
         android:label="fragment_gallery"
-        tools:layout="@layout/fragment_gallery" ><action android:id="@+id/action_gallery_to_mainFragment" app:destination="@id/mainFragment" app:popUpTo="@id/gallery" app:popUpToInclusive="true"/>
+        tools:layout="@layout/fragment_gallery" >
+        <action android:id="@+id/action_gallery_to_mainFragment" app:destination="@id/mainFragment" app:popUpTo="@id/gallery" app:popUpToInclusive="true"/>
         <action
             android:id="@+id/action_gallery_to_galleryViewPagerFragment"
-            app:destination="@id/galleryViewPagerFragment" />
+            app:destination="@id/galleryViewPagerFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim" />
     </fragment>
     <fragment
         android:id="@+id/importImage"
