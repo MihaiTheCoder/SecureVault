@@ -1,5 +1,6 @@
-package com.mihaiapps.securevault.bl.Glide
+package com.mihaiapps.securevault.bl.glide
 
+import android.util.Log
 import com.bumptech.glide.Priority
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.data.DataFetcher
@@ -15,7 +16,7 @@ class LocalEncryptedDataFetcher(private val model: String,
     }
 
     override fun cleanup() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
     }
 
     override fun getDataSource(): DataSource {
@@ -23,10 +24,19 @@ class LocalEncryptedDataFetcher(private val model: String,
     }
 
     override fun cancel() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
     }
 
     override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in InputStream>) {
+        Log.e("CIUPA", "CIUPAAAA")
+        Log.e("CIUPA", "CIUPAAAA")
+        Log.e("CIUPA", "CIUPAAAA")
+        Log.e("CIUPA", "CIUPAAAA")
+        Log.e("CIUPA", "CIUPAAAA")
+        Log.e("CIUPA", "CIUPAAAA")
+        Log.e("CIUPA", "CIUPAAAA")
+        Log.e("CIUPA", "CIUPAAAA")
+        Log.e("CIUPA", "CIUPAAAA")
         val stream = cipher.getInputStream(fileReader.getInputStrem(model))
         callback.onDataReady(stream)
 

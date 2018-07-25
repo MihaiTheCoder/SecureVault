@@ -1,4 +1,4 @@
-package com.mihaiapps.securevault.bl.Glide
+package com.mihaiapps.securevault.bl.glide
 
 import com.bumptech.glide.load.Options
 import com.bumptech.glide.load.model.ModelLoader

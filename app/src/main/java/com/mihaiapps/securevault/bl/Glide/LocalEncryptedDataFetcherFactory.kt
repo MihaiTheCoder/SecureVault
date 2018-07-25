@@ -1,13 +1,18 @@
-package com.mihaiapps.securevault.bl.Glide
+package com.mihaiapps.securevault.bl.glide
 
 import com.mihaiapps.securevault.bl.LocalFileReader
-import com.mihaiapps.securevault.bl.enc.cipher.BaseCipher
+import com.mihaiapps.securevault.bl.enc.KeyInitializer
+import org.koin.KoinContext
+import org.koin.standalone.StandAloneContext
 
-class LocalEncryptedDataFetcherFactory(private val fileReader: LocalFileReader,
-                                       private val cipher: BaseCipher) {
+class LocalEncryptedDataFetcherFactory {
+
+    val fileReader: LocalFileReader by inject()
+    val keyInitializer: KeyInitializer by inject()
 
     fun getDataFetcher(model: String): LocalEncryptedDataFetcher {
-        return LocalEncryptedDataFetcher(model, fileReader, cipher)
+        return LocalEncryptedDataFetcher(model, fileReader, keyInitializer.cipher)
     }
-
+    inline fun <reified T> inject(name: String = "")
+            = lazy { (StandAloneContext.koinContext as KoinContext).get<T>(name) }
 }

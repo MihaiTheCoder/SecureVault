@@ -1,15 +1,30 @@
 package com.mihaiapps.securevault
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import androidx.navigation.fragment.NavHostFragment
-import kotlinx.android.synthetic.main.fragment_main.*
+import android.os.Environment.DIRECTORY_PICTURES
+import android.provider.MediaStore
+import androidx.core.content.FileProvider
+import com.mihaiapps.securevault.bl.LocalFileReader
+import com.mihaiapps.securevault.bl.enc.EncryptUtils
+import com.mihaiapps.securevault.bl.enc.EncryptedFileManager
+import com.mihaiapps.securevault.bl.enc.KeyInitializer
+import org.koin.android.ext.android.inject
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.nio.file.Files
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -31,6 +46,8 @@ class MainFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
     private var listener: OnFragmentInteractionListener? = null
+    val encryptedFileManager: EncryptedFileManager by inject()
+    val localFileReader: LocalFileReader by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,13 +63,57 @@ class MainFragment : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_main, container, false)
 
-        val btn: ImageButton = view.findViewById(R.id.view_gallery)
-        btn.setOnClickListener{ _ ->
+        val viewGalleryButton: ImageButton = view.findViewById(R.id.view_gallery)
+        viewGalleryButton.setOnClickListener{ _ ->
             NavHostFragment.findNavController(this).navigate(R.id.action_mainFragment_to_gallery)
         }
 
+        val takePhotoButton: ImageButton = view.findViewById(R.id.import_photo)
+        takePhotoButton.setOnClickListener{_ -> dispatchTakePictureIntent()}
+
+
         return view
     }
+
+    private lateinit var mCurrentPhotoPath: String
+
+    private fun createImageFile(): File {
+        // Create an image file name
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        val imageFileName = "JPEG_" + timeStamp + "_"
+        val image = File.createTempFile(
+                imageFileName, /* prefix */
+                ".jpg", /* suffix */
+                localFileReader.getPicturesDirectory()      /* directory */
+        )
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = image.absolutePath
+        return image
+    }
+
+    private fun dispatchTakePictureIntent() {
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+
+        if(takePictureIntent.resolveActivity(context!!.packageManager) != null) {
+            val photoFile = createImageFile()
+
+            val photoURI = FileProvider.getUriForFile(context!!,FILE_PROVIDER_AUTHORITH, photoFile)
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+            startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO)
+
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if(requestCode == REQUEST_TAKE_PHOTO) {
+            encryptedFileManager.encryptFile(mCurrentPhotoPath,
+                    mCurrentPhotoPath + EncryptUtils.FILE_EXTENSION,
+                    true )
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
 
     // TODO: Rename method, update argument and hook method into UI event
     fun onButtonPressed(uri: Uri) {
@@ -90,6 +151,8 @@ class MainFragment : Fragment() {
     }
 
     companion object {
+        const val REQUEST_TAKE_PHOTO = 1
+        const val FILE_PROVIDER_AUTHORITH = "com.mihaiapps.securevault.fileprovider"
         /**
          * Use this factory method to create a new instance of
          * this fragment using the provided parameters.

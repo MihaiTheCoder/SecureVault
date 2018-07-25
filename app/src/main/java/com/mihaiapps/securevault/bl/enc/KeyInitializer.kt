@@ -8,21 +8,22 @@ import com.mihaiapps.securevault.data.KeyValuePairEntity
 class KeyInitializer(private val keyValuePairDAO: KeyValuePairDAO,
                      private val asymmetricKeyStoreManager: AsymmetricKeyStoreManager,
                      private val memoryPool: MemoryPool) {
-    lateinit var cipher:AESCipher
+    val cipher:AESCipher by lazy {init()}
 
-    fun init() {
+    fun init(): AESCipher {
         asymmetricKeyStoreManager.createMasterKeyIfNotInStore()
         val symmetricKey = keyValuePairDAO.findById(EncryptUtils.SYMMETRIC_KEY_ALIAS)
 
-        if(symmetricKey == null) {
-            cipher = AESCipher.getInstance(memoryPool)
+        return if(symmetricKey == null) {
+            val localCipher = AESCipher.getInstance(memoryPool)
 
-            val encryptedKey = asymmetricKeyStoreManager.encryptKey(cipher.toByteArray())
+            val encryptedKey = asymmetricKeyStoreManager.encryptKey(localCipher.toByteArray())
             keyValuePairDAO.insertAll(KeyValuePairEntity(EncryptUtils.SYMMETRIC_KEY_ALIAS, encryptedKey))
+            localCipher
         }
         else {
             val decryptedKey = asymmetricKeyStoreManager.decryptKey(symmetricKey.value)
-            cipher = AESCipher.fromByteArray(decryptedKey, memoryPool)
+            AESCipher.fromByteArray(decryptedKey, memoryPool)
         }
     }
 }
