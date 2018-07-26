@@ -47,4 +47,8 @@ class EncryptFileManagerImpl(val cipher: BaseCipher, private val memoryPool: Mem
         return cipher.getInputStream(encryptedStream)
     }
 
+    override fun getEncryptedStream(outStream: OutputStream): OutputStream {
+        return cipher.getOutputStream(outStream)
+    }
+
 }

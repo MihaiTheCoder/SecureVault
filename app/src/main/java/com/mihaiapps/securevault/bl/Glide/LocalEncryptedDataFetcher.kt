@@ -28,15 +28,6 @@ class LocalEncryptedDataFetcher(private val model: String,
     }
 
     override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in InputStream>) {
-        Log.e("CIUPA", "CIUPAAAA")
-        Log.e("CIUPA", "CIUPAAAA")
-        Log.e("CIUPA", "CIUPAAAA")
-        Log.e("CIUPA", "CIUPAAAA")
-        Log.e("CIUPA", "CIUPAAAA")
-        Log.e("CIUPA", "CIUPAAAA")
-        Log.e("CIUPA", "CIUPAAAA")
-        Log.e("CIUPA", "CIUPAAAA")
-        Log.e("CIUPA", "CIUPAAAA")
         val stream = cipher.getInputStream(fileReader.getInputStrem(model))
         callback.onDataReady(stream)
 

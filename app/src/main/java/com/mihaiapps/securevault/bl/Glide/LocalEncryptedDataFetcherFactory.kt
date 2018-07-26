@@ -7,8 +7,8 @@ import org.koin.standalone.StandAloneContext
 
 class LocalEncryptedDataFetcherFactory {
 
-    val fileReader: LocalFileReader by inject()
-    val keyInitializer: KeyInitializer by inject()
+    private val fileReader: LocalFileReader by inject()
+    private val keyInitializer: KeyInitializer by inject()
 
     fun getDataFetcher(model: String): LocalEncryptedDataFetcher {
         return LocalEncryptedDataFetcher(model, fileReader, keyInitializer.cipher)
