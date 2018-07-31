@@ -40,6 +40,7 @@ class Gallery : Fragment() {
             )
 
     fun loadImageModels() {
+        //localFileReader.deleteFiles(localFileReader.getImages())
         val imagePaths = localFileReader.getImages() + imgs
         for ((index, img) in imagePaths.withIndex()) {
             data.add(ImageModel("Image$index", img))

@@ -3,10 +3,12 @@ package com.mihaiapps.securevault.di
 import androidx.room.Room
 import com.mihaiapps.securevault.MainApplication
 import com.mihaiapps.securevault.data.AppDatabase
+import com.mihaiapps.securevault.data.AppDatabaseFactory
 import org.koin.dsl.module.applicationContext
 
 val dataModule = applicationContext {
-    bean { Room.databaseBuilder(MainApplication.getContext(), AppDatabase::class.java, AppDatabase.NAME).allowMainThreadQueries().build() }
+    bean { AppDatabaseFactory() }
+    bean { get<AppDatabaseFactory>().get() }
 
     bean { get<AppDatabase>().keyValuePairDao() }
 }

@@ -9,7 +9,11 @@
         android:id="@+id/login"
         android:name="com.mihaiapps.securevault.Login"
         android:label="fragment_login"
-        tools:layout="@layout/fragment_login" />
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_login_to_mainFragment"
+            app:destination="@id/mainFragment" />
+    </fragment>
     <fragment
         android:id="@+id/mainFragment"
         android:name="com.mihaiapps.securevault.MainFragment"

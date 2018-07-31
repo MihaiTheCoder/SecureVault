@@ -1,6 +1,5 @@
 package com.mihaiapps.securevault.bl.glide
 
-import android.util.Log
 import com.bumptech.glide.Priority
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.data.DataFetcher

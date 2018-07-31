@@ -25,6 +25,12 @@ class LocalFileReader(private val context: Context) {
             getPicturesDirectory().listFiles().map { it.absolutePath }
         } else {
             getPicturesDirectory().listFiles(filter).map { it.absolutePath }
+        }
+    }
+
+    fun deleteFiles(files: List<String>) {
+        for (file in files) {
+            File(file).delete()
 
         }
     }

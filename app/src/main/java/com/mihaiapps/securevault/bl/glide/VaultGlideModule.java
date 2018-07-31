@@ -2,6 +2,9 @@ package com.mihaiapps.securevault.bl.glide;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.util.Log;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Registry;
@@ -16,16 +19,26 @@ import androidx.annotation.NonNull;
 
 @GlideModule
 public class VaultGlideModule extends AppGlideModule {
+
+    static String TAG = "VaultGlideModule";
+
     @Override
     public void registerComponents(@NonNull Context context, final @NonNull Glide glide, @NonNull Registry registry) {
 
-        Runnable runnable  = new Runnable(){
-            @Override
-            public void run() {
-                glide.clearDiskCache();
-            }
-        };
-        new Thread(runnable).start();
+
+
+        try {
+            AsyncTask.execute(new Runnable() {
+                @Override
+                public void run() {
+                    glide.clearDiskCache();
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Error clearing Glide cache", e);
+
+        }
+        //new Thread(runnable).start();
 
         Downsampler downsampler = new Downsampler(registry.getImageHeaderParsers(),
                 context.getResources().getDisplayMetrics(), glide.getBitmapPool(), glide.getArrayPool());

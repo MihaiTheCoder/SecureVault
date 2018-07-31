@@ -16,13 +16,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import org.koin.android.ext.android.inject
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
-        MainFragment.OnFragmentInteractionListener{
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     val keyInitializer: KeyInitializer by inject()
-
-    override fun onFragmentInteraction(uri: Uri) {
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

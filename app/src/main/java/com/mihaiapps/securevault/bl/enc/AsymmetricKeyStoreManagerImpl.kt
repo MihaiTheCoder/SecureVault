@@ -19,6 +19,7 @@ import java.security.*
 import java.security.spec.RSAKeyGenParameterSpec
 import java.util.*
 import javax.crypto.Cipher
+import javax.crypto.spec.PBEKeySpec
 import javax.security.auth.x500.X500Principal
 
 class AsymmetricKeyStoreManagerImpl(private val masterKeyAlias: String, private val context: Context) : AsymmetricKeyStoreManager {
@@ -79,6 +80,16 @@ class AsymmetricKeyStoreManagerImpl(private val masterKeyAlias: String, private 
             privateKey != null && publicKey != null -> KeyPair(publicKey, privateKey)
             else -> null
         }
+        val password = "password"
+        val iterationCount = 1000
+        val keyLength = 256
+        val saltLength = keyLength / 8 // same size as key output
+
+        val random = SecureRandom()
+        val salt = ByteArray(saltLength)
+        random.nextBytes(salt)
+        val keySpec = PBEKeySpec(password.toCharArray(), salt,
+                iterationCount, keyLength)
     }
 
     private fun initKeyStore(): KeyStore {
