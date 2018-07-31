@@ -19,20 +19,30 @@ import java.security.*
 import java.security.spec.RSAKeyGenParameterSpec
 import java.util.*
 import javax.crypto.Cipher
-import javax.crypto.spec.PBEKeySpec
 import javax.security.auth.x500.X500Principal
 
-class AsymmetricKeyStoreManagerImpl(private val masterKeyAlias: String, private val context: Context) : AsymmetricKeyStoreManager {
+class AsymmetricKeyStoreManagerImpl(private val masterKeyAlias: String,
+                                    private val context: Context) : AsymmetricKeyStoreManager {
 
     private val keyStore by lazy { initKeyStore() }
 
-    private val cipher by lazy { Cipher.getInstance(TRANSFORMATION_ASYMMETRIC) }
+    private val cipher by lazy { Cipher.getInstance(RSA_ECB_PKCS1_PADDING) }
+
+    private val cipherNoPadding by lazy { Cipher.getInstance(RSA_ECB_NO_PADDING) }
+
+    init {
+        createMasterKeyIfNotInStore()
+    }
 
     override fun encryptKey(keyToEncrypt: ByteArray): ByteArray {
+        return encryptWithCipher(keyToEncrypt, cipher)
+    }
+
+    private fun encryptWithCipher(keyToEncrypt: ByteArray, cipher: Cipher): ByteArray {
         val masterKey = getMasterKey()
 
         return when {
-            masterKey != null -> cipherDoFinal(Cipher.ENCRYPT_MODE, keyToEncrypt, masterKey.public)
+            masterKey != null -> cipherDoFinal(cipher, Cipher.ENCRYPT_MODE, keyToEncrypt, masterKey.public)
             else -> keyToEncrypt
         }
     }
@@ -40,7 +50,7 @@ class AsymmetricKeyStoreManagerImpl(private val masterKeyAlias: String, private 
     override fun decryptKey(keyToDecrypt: ByteArray): ByteArray {
         val masterKey = getMasterKey()
         return when {
-            masterKey != null -> cipherDoFinal(Cipher.DECRYPT_MODE, keyToDecrypt, masterKey.private)
+            masterKey != null -> cipherDoFinal(cipher, Cipher.DECRYPT_MODE, keyToDecrypt, masterKey.private)
             else -> keyToDecrypt
         }
     }
@@ -68,7 +78,7 @@ class AsymmetricKeyStoreManagerImpl(private val masterKeyAlias: String, private 
         generator.genKeyPair()
     }
 
-    private fun cipherDoFinal(cipher_mode: Int, content: ByteArray, key: Key): ByteArray {
+    private fun cipherDoFinal(cipher: Cipher,cipher_mode: Int, content: ByteArray, key: Key): ByteArray {
         cipher.init(cipher_mode, key)
         return cipher.doFinal(content)
     }
@@ -80,16 +90,6 @@ class AsymmetricKeyStoreManagerImpl(private val masterKeyAlias: String, private 
             privateKey != null && publicKey != null -> KeyPair(publicKey, privateKey)
             else -> null
         }
-        val password = "password"
-        val iterationCount = 1000
-        val keyLength = 256
-        val saltLength = keyLength / 8 // same size as key output
-
-        val random = SecureRandom()
-        val salt = ByteArray(saltLength)
-        random.nextBytes(salt)
-        val keySpec = PBEKeySpec(password.toCharArray(), salt,
-                iterationCount, keyLength)
     }
 
     private fun initKeyStore(): KeyStore {
@@ -159,6 +159,7 @@ class AsymmetricKeyStoreManagerImpl(private val masterKeyAlias: String, private 
     companion object {
         private const val  ANDROID_KEY_STORE= "AndroidKeyStore"
         private const val ALGORITHM = "RSA"
-        private const val TRANSFORMATION_ASYMMETRIC = "RSA/ECB/PKCS1Padding"
+        private const val RSA_ECB_PKCS1_PADDING = "RSA/ECB/PKCS1Padding"
+        private const val RSA_ECB_NO_PADDING = "RSA/ECB/NoPadding"
     }
 }

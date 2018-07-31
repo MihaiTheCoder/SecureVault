@@ -11,7 +11,6 @@ class KeyInitializer(private val keyValuePairDAO: KeyValuePairDAO,
     val cipher:AESCipher by lazy {init()}
 
     fun init(): AESCipher {
-        asymmetricKeyStoreManager.createMasterKeyIfNotInStore()
         val symmetricKey = keyValuePairDAO.findById(EncryptUtils.SYMMETRIC_KEY_ALIAS)
 
         return if(symmetricKey == null) {

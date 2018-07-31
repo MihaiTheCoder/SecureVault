@@ -41,7 +41,7 @@ class AppDatabaseFactory {
         encryptFactory = SafeHelperFactory(pass)
     }
 
-    fun isPasswordCorrect(): Boolean {
+    fun isDatabaseCorrectlyDecrypted(): Boolean {
         val db = get()
         return try {
             db.beginTransaction()

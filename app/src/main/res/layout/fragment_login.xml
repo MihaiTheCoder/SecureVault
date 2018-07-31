@@ -6,6 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".Login">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/pin_label"
+        android:text="Register"/>
+
+
     <com.mihaiapps.securevault.controls.PinEntryEditText
         android:background="@null"
         android:id="@+id/txt_pin_entry"

@@ -7,54 +7,102 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import com.mihaiapps.securevault.data.AppDatabaseFactory
 import kotlinx.android.synthetic.main.fragment_login.*
 import org.koin.android.ext.android.inject
-import android.app.Activity
 import android.os.Handler
 import android.text.SpannableStringBuilder
 import android.util.Log
-import android.widget.EditText
 import android.widget.Toast
 import androidx.navigation.fragment.NavHostFragment
+import com.mihaiapps.securevault.bl.enc.PasswordManager
 
 class Login : Fragment() {
-
-    private val appDatabaseFactory: AppDatabaseFactory by inject()
+    private val passwordManager: PasswordManager by inject()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         MainApplication.IsPinEnered = true
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_login, container, false)
-
-
-
-
-        //
-
         return view
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        showSoftKeyboard(txt_pin_entry)
-        txt_pin_entry.setOnPinEnteredListener { text: CharSequence ->
-            text as SpannableStringBuilder
-            val pass = CharArray(text.length)
-            text.getChars(0, text.length,pass, 0)
-            appDatabaseFactory.setEncryption(pass)
+        if(passwordManager.getIsPinRegistered()) {
+            if(passwordManager.getIsPasswordForgettable()) {
+                loginPinForgettablePassword()
 
-            if(appDatabaseFactory.isPasswordCorrect()) {
-                hideSoftKeyboard(txt_pin_entry)
-                NavHostFragment.findNavController(this).navigate(R.id.action_login_to_mainFragment)
-            } else {
-                Toast.makeText(context, "FAIL", Toast.LENGTH_SHORT).show()
-                txt_pin_entry.isError = true
-                txt_pin_entry.text = null
+            }
+            else {
+                loginPinUnforgettablePassword()
+            }
+            pin_label.text = getString(R.string.LOGIN_PIN)
+        }
+        else {
+            registerPin()
+        }
+    }
+
+    private fun registerPin() {
+        showSoftKeyboard(txt_pin_entry)
+        pin_label.text = getString(R.string.REGISTER_PIN)
+        txt_pin_entry.setOnPinEnteredListener { text: CharSequence ->
+            passwordManager.rememberPassword(text)
+            txt_pin_entry.text = null
+            pin_label.text = getString(R.string.RE_ENTER_PIN)
+            txt_pin_entry.setOnPinEnteredListener {text: CharSequence ->
+                if(passwordManager.verifyPinIsTheSame(text)) {
+                    passwordManager.registerPasswordInDatabase(text)
+                    onCorrectPinEntered()
+                } else {
+                    onWrongPinEntered()
+                }
             }
         }
+    }
+
+    private fun loginPinForgettablePassword() {
+        showSoftKeyboard(txt_pin_entry)
+        txt_pin_entry.setOnPinEnteredListener { text:CharSequence ->
+            isPinCorrectlyRegisteredInDb(text)
+        }
+    }
+
+    private fun loginPinUnforgettablePassword() {
+        showSoftKeyboard(txt_pin_entry)
+        txt_pin_entry.setOnPinEnteredListener { text: CharSequence ->
+            passwordManager.initDbWithPassword(convertToCharArray(text))
+            if (passwordManager.isDatabaseCorrectlyDecrypted()) {
+                isPinCorrectlyRegisteredInDb(text)
+            } else
+                onWrongPinEntered()
+        }
+    }
+
+    private fun isPinCorrectlyRegisteredInDb(text: CharSequence) {
+        if (passwordManager.isPasswordHashInTheDatabase(text))
+            onCorrectPinEntered()
+        else
+            onWrongPinEntered()
+    }
+
+    private fun onCorrectPinEntered() {
+        hideSoftKeyboard(txt_pin_entry)
+        NavHostFragment.findNavController(this).navigate(R.id.action_login_to_mainFragment)
+    }
+
+    private fun onWrongPinEntered() {
+        Toast.makeText(context, getString(R.string.WRONG_PIN), Toast.LENGTH_SHORT).show()
+        txt_pin_entry.isError = true
+        txt_pin_entry.text = null
+    }
+
+    private fun convertToCharArray(text: CharSequence): CharArray {
+        text as SpannableStringBuilder
+        val pass = CharArray(text.length)
+        text.getChars(0, text.length, pass, 0)
+        return pass
     }
 
     fun showSoftKeyboard(view: View) {

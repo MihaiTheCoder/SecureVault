@@ -14,7 +14,7 @@ class HmacSha1Signature {
         hmacSHA1.init(SecretKeySpec(key, HMAC_SHA1_ALGORITHM))
     }
 
-    fun hmac(message: ByteArray): ByteArray? {
+    fun hmac(message: ByteArray): ByteArray {
         return hmacSHA1.doFinal(message)
     }
 }
