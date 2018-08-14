@@ -10,6 +10,23 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Import image from local storage" />
+
+        <ImageButton
+            android:id="@+id/import_images_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_menu_send"
+            tools:src="@mipmap/ic_launcher_round" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -36,7 +36,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:annotations:4.8.0-SNAPSHOT'
     implementation "com.commonsware.cwac:saferoom:0.4.3"
     implementation 'com.android.support:support-compat:28.1.1'
-
+    implementation 'com.github.florent37:runtime-permission-kotlin:1.0.1'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.0-alpha4'
