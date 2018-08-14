@@ -1,9 +1,8 @@
 package com.mihaiapps.securevault.data
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
+import androidx.room.OnConflictStrategy.REPLACE
+import com.mihaiapps.securevault.bl.enc.PasswordManager
 
 @Dao
 interface KeyValuePairDAO {
@@ -18,5 +17,8 @@ interface KeyValuePairDAO {
 
     @Delete
     fun delete(keyValuePair: KeyValuePairEntity)
+
+    @Update(onConflict = REPLACE)
+    fun update(keyValuePair: KeyValuePairEntity)
 
 }

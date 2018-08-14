@@ -24,7 +24,7 @@ class AppDatabaseFactory {
         if(database != null)
             return database!!
 
-        MainApplication.getContext().deleteDatabase(AppDatabase.NAME)
+        //MainApplication.getContext().deleteDatabase(AppDatabase.NAME)
 
         var db =  Room.databaseBuilder(MainApplication.getContext(), AppDatabase::class.java, AppDatabase.NAME)
                 .allowMainThreadQueries()

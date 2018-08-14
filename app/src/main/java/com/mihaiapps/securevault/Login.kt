@@ -2,7 +2,7 @@ package com.mihaiapps.securevault
 
 import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +13,9 @@ import android.os.Handler
 import android.text.SpannableStringBuilder
 import android.util.Log
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
+import com.mihaiapps.securevault.R.id.pin_label
 import com.mihaiapps.securevault.bl.enc.PasswordManager
 
 class Login : Fragment() {
@@ -22,6 +24,7 @@ class Login : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         MainApplication.IsPinEnered = true
+
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_login, container, false)
         return view
@@ -32,7 +35,6 @@ class Login : Fragment() {
         if(passwordManager.getIsPinRegistered()) {
             if(passwordManager.getIsPasswordForgettable()) {
                 loginPinForgettablePassword()
-
             }
             else {
                 loginPinUnforgettablePassword()
@@ -81,14 +83,16 @@ class Login : Fragment() {
     }
 
     private fun isPinCorrectlyRegisteredInDb(text: CharSequence) {
-        if (passwordManager.isPasswordHashInTheDatabase(text))
+        if (passwordManager.login(text))
             onCorrectPinEntered()
-        else
+        else {
             onWrongPinEntered()
+        }
     }
 
     private fun onCorrectPinEntered() {
         hideSoftKeyboard(txt_pin_entry)
+        passwordManager.setIsPinRegistered(true)
         NavHostFragment.findNavController(this).navigate(R.id.action_login_to_mainFragment)
     }
 
@@ -96,6 +100,14 @@ class Login : Fragment() {
         Toast.makeText(context, getString(R.string.WRONG_PIN), Toast.LENGTH_SHORT).show()
         txt_pin_entry.isError = true
         txt_pin_entry.text = null
+
+        val waitingPeriodInMilliSeconds = passwordManager.getPeriodToWaitForWrongPin()
+        if(waitingPeriodInMilliSeconds > 0)
+            showWaitingScreen(waitingPeriodInMilliSeconds)
+    }
+
+    private fun showWaitingScreen(waitingPeriodInMilliSeconds: Long) {
+        Toast.makeText(context, "DELAY $waitingPeriodInMilliSeconds", Toast.LENGTH_SHORT).show()
     }
 
     private fun convertToCharArray(text: CharSequence): CharArray {

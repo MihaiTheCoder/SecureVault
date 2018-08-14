@@ -5,9 +5,12 @@ import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import com.mihaiapps.securevault.data.AppDatabaseFactory
 import com.mihaiapps.securevault.data.KeyValuePairEntity
-import java.nio.charset.Charset
 import java.security.SecureRandom
 import android.util.Base64
+import com.mihaiapps.securevault.bl.*
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreManager,
                       context: Context,
@@ -18,6 +21,7 @@ class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreM
         const val ALLOW_PASSWORD_FORGET = "IsPasswordForgettable"
         const val PASSWORD_HASH = "PASSWORD_HASH"
         const val PASSWORD_HMAC_KEY = "PASSWORD_HMAC_KEY"
+        const val LOGIN_ATTEMPTS = "LOGIN_ATTEMPTS"
     }
 
     private val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -105,6 +109,8 @@ class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreM
     fun registerPasswordInDatabase(pass:CharSequence) {
         val mac: ByteArray = hmac(pass)
         keyValuePairDAO.insertAll(KeyValuePairEntity(PASSWORD_HASH,mac))
+        val loginAttempts = LoginAttempts(0, Calendar.getInstance().time)
+        upsertLoginAttempts(loginAttempts)
     }
 
     fun initDbWithPassword(pass:CharArray) {
@@ -115,11 +121,94 @@ class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreM
         return databaseFactory.isDatabaseCorrectlyDecrypted()
     }
 
-    fun isPasswordHashInTheDatabase(pass:CharSequence): Boolean {
+    fun login(pass:CharSequence): Boolean {
         val keyValuePairEntity: KeyValuePairEntity? = keyValuePairDAO.findById(PASSWORD_HASH)
         return if(keyValuePairEntity == null)
+
             false
-        else
-            hmac(pass).contentEquals(keyValuePairEntity.value)
+        else {
+            val isPasswordCorrect = hmac(pass).contentEquals(keyValuePairEntity.value)
+
+            if(isPasswordCorrect)
+                upsertLoginAttempts(LoginAttempts(0, getCurrentDate()))
+
+            isPasswordCorrect
+        }
+    }
+
+    fun getPeriodToWaitForWrongPin(): Long {
+        return if(!getIsPinRegistered()) {
+            0
+        }
+        else {
+            val loginAttempts = getLoginAttempts()
+            val nextLoginAttempts = LoginAttempts(loginAttempts.numberOfRetries + 1, getCurrentDate())
+            val delaysInMillis = getDelayInMilliSeconds(nextLoginAttempts.numberOfRetries)
+
+            delaysInMillis
+        }
+    }
+
+    private fun getDelayInMilliSeconds(numberOfRetries: Int): Long {
+        if(numberOfRetries <= -1)
+            return TimeUnit.DAYS.toMillis(1)
+        if(numberOfRetries <= 6)
+            return 0
+        if(numberOfRetries<=10)
+            return TimeUnit.MINUTES.toMillis(1)
+        if(numberOfRetries<=20)
+            return  TimeUnit.MINUTES.toMillis(30)
+        return TimeUnit.DAYS.toMillis(1)
+    }
+
+    private fun canRetryLogin(loginAttempts: LoginAttempts): Boolean {
+        if(loginAttempts.numberOfRetries == 0)
+            return true
+
+        val actualDiffInMillis = getCurrentDate().time - loginAttempts.dateOfLastRetry.time
+        val expectedDelayInMillis = getDelayInMilliSeconds(loginAttempts.numberOfRetries)
+
+        return actualDiffInMillis > expectedDelayInMillis
+    }
+
+    private fun getCurrentDate() = Calendar.getInstance().time
+
+    private fun upsertLoginAttempts(loginAttempts: LoginAttempts) {
+        val loginAttemptsByteArray = loginAttempts.toByteArray()
+        val encryptedAttempts = asymmetricKeyStoreManager.encryptKey(loginAttemptsByteArray)
+        val edit = preferences.edit()
+        edit.putString(LOGIN_ATTEMPTS, encryptedAttempts.encodeToBase64())
+        edit.apply()
+    }
+
+    private fun getLoginAttempts(): LoginAttempts {
+        val loginEncrypted = preferences.getString(LOGIN_ATTEMPTS, null)!!
+                .decodeBase64()
+
+        val decryptedLoginAttempts = asymmetricKeyStoreManager.decryptKey(loginEncrypted)
+        return LoginAttempts.fromByteArray(decryptedLoginAttempts)
+    }
+
+
+    data class LoginAttempts(val numberOfRetries: Int, val dateOfLastRetry: Date) {
+        override fun toString(): String {
+            return "$numberOfRetries;${dateFormat.format(dateOfLastRetry)}"
+        }
+
+        fun toByteArray(): ByteArray {
+            return toString().toByteArrayUtf8()
+        }
+
+        companion object {
+            fun fromByteArray(serialized: ByteArray): LoginAttempts {
+                val str = serialized.toStringUtf8()
+                val splited = str.split(";")
+                val numberOfRetries = splited[0].toInt()
+
+                return LoginAttempts(numberOfRetries, dateFormat.parse(splited[1]))
+            }
+
+            var dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+        }
     }
 }
