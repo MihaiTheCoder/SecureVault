@@ -22,6 +22,7 @@ class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreM
         const val PASSWORD_HASH = "PASSWORD_HASH"
         const val PASSWORD_HMAC_KEY = "PASSWORD_HMAC_KEY"
         const val LOGIN_ATTEMPTS = "LOGIN_ATTEMPTS"
+
     }
 
     private val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -43,6 +44,11 @@ class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreM
         val preferencesEdit = preferences.edit()
         preferencesEdit.putBoolean(ALLOW_PASSWORD_FORGET, isPasswordForgettable)
         preferencesEdit.apply()
+    }
+
+
+    fun hasDecidedIfPasswordIsForgettable(): Boolean {
+        return preferences.contains(ALLOW_PASSWORD_FORGET)
     }
 
     fun getIsPasswordForgettable(): Boolean {
@@ -131,6 +137,9 @@ class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreM
 
             if(isPasswordCorrect)
                 upsertLoginAttempts(LoginAttempts(0, getCurrentDate()))
+            else {
+                increaseNumberOfAttempts()
+            }
 
             isPasswordCorrect
         }
@@ -189,6 +198,11 @@ class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreM
         return LoginAttempts.fromByteArray(decryptedLoginAttempts)
     }
 
+    private fun increaseNumberOfAttempts() {
+        val loginAttempts = getLoginAttempts()
+        val newLoginAttempts = LoginAttempts(loginAttempts.numberOfRetries+1, getCurrentDate())
+        upsertLoginAttempts(newLoginAttempts)
+    }
 
     data class LoginAttempts(val numberOfRetries: Int, val dateOfLastRetry: Date) {
         override fun toString(): String {

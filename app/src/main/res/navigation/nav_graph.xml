@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_login_to_mainFragment"
             app:destination="@id/mainFragment" />
+        <action
+            android:id="@+id/action_login_to_isPasswordForgetable"
+            app:destination="@id/isPasswordForgetable" />
     </fragment>
     <fragment
         android:id="@+id/mainFragment"
@@ -88,4 +91,13 @@
         android:name="com.mihaiapps.securevault.GalleryViewPagerFragment"
         android:label="fragment_gallery_view_pager"
         tools:layout="@layout/fragment_gallery_view_pager" />
+    <fragment
+        android:id="@+id/isPasswordForgetable"
+        android:name="com.mihaiapps.securevault.IsPasswordForgettable"
+        android:label="fragment_is_password_forgetable"
+        tools:layout="@layout/fragment_is_password_forgettable" >
+        <action
+            android:id="@+id/action_isPasswordForgetable_to_login"
+            app:destination="@id/login" />
+    </fragment>
 </navigation>

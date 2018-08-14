@@ -2,14 +2,9 @@ package com.mihaiapps.securevault.data
 
 
 import android.util.Log
-import android.widget.Toast
-import androidx.navigation.fragment.NavHostFragment
 import androidx.room.Room
+import com.commonsware.cwac.saferoom.SafeHelperFactory
 import com.mihaiapps.securevault.MainApplication
-import com.commonsware.cwac.saferoom.*
-import com.mihaiapps.securevault.Login
-import com.mihaiapps.securevault.R
-import kotlinx.android.synthetic.main.fragment_login.*
 
 class AppDatabaseFactory {
     companion object {

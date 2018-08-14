@@ -15,7 +15,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
-import com.mihaiapps.securevault.R.id.pin_label
 import com.mihaiapps.securevault.bl.enc.PasswordManager
 
 class Login : Fragment() {
@@ -42,7 +41,12 @@ class Login : Fragment() {
             pin_label.text = getString(R.string.LOGIN_PIN)
         }
         else {
-            registerPin()
+            if (passwordManager.hasDecidedIfPasswordIsForgettable())
+                registerPin()
+            else
+                NavHostFragment.findNavController(this)
+                        .navigate(R.id.action_login_to_isPasswordForgetable)
+
         }
     }
 

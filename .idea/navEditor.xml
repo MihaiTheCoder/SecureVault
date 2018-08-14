@@ -31,6 +31,11 @@
                         </option>
                         <option name="myPositions">
                           <map>
+                            <entry key="action_gallery_to_galleryViewPagerFragment">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
                             <entry key="action_gallery_to_mainFragment">
                               <value>
                                 <LayoutPositions />
@@ -112,6 +117,18 @@
                       </LayoutPositions>
                     </value>
                   </entry>
+                  <entry key="isPasswordForgetable">
+                    <value>
+                      <LayoutPositions>
+                        <option name="myPosition">
+                          <Point>
+                            <option name="x" value="-401" />
+                            <option name="y" value="-11" />
+                          </Point>
+                        </option>
+                      </LayoutPositions>
+                    </value>
+                  </entry>
                   <entry key="login">
                     <value>
                       <LayoutPositions>
@@ -120,6 +137,15 @@
                             <option name="x" value="80" />
                             <option name="y" value="11" />
                           </Point>
+                        </option>
+                        <option name="myPositions">
+                          <map>
+                            <entry key="action_login_to_mainFragment">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
+                          </map>
                         </option>
                       </LayoutPositions>
                     </value>
@@ -151,6 +177,11 @@
                               </value>
                             </entry>
                             <entry key="action_mainFragment_to_importImage">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
+                            <entry key="action_mainFragment_to_isPasswordForgetable">
                               <value>
                                 <LayoutPositions />
                               </value>

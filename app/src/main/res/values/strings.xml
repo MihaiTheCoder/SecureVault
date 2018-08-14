@@ -13,4 +13,7 @@
     <string name="REGISTER_PIN">Register PIN</string>
     <string name="WRONG_PIN">Wrong PIN</string>
     <string name="RE_ENTER_PIN">Enter PIN again to verify</string>
+    <string name="will_you_remember_the_password">Will you remember the password?</string>
+    <string name="no">no</string>
+    <string name="yes">yes</string>
 </resources>
