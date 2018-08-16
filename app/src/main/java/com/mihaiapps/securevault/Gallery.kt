@@ -62,7 +62,7 @@ class Gallery : Fragment() {
         mAdapter =GalleryAdapter(data) { _, position, imageView ->
             val args = Bundle().apply {
                 putInt(ARG_EXTRA_INITIAL_POS, position)
-                //localFileReader.deleteFile(data[position].url)
+
                 putParcelableArrayList(ARG_EXTRA_IMAGES, data)
             }
             NavHostFragment.findNavController(this).navigate(R.id.action_gallery_to_galleryViewPagerFragment, args)
@@ -75,6 +75,8 @@ class Gallery : Fragment() {
 
         return view
     }
+
+
 
     companion object {
         val TAG = Gallery::class.java.simpleName!!

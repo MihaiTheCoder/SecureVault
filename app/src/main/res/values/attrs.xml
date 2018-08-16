@@ -16,4 +16,9 @@
         <attr name="pinBackgroundDrawable" format="reference" />
         <attr name="pinBackgroundIsSquare" format="boolean" />
     </declare-styleable>
+    <declare-styleable name="LayeredCheckableFloatingActionButton">
+        <attr name="android:elevation"/>
+        <attr name="pressed_elevation" format="dimension"/>
+
+    </declare-styleable>
 </resources>

@@ -64,7 +64,6 @@ class MainFragment : Fragment() {
                         intent.action = Intent.ACTION_GET_CONTENT
                         startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQUEST_SELECT_IMAGE)
                     }.ask()
-
         }
     }
 

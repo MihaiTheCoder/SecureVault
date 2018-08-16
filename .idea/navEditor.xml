@@ -126,6 +126,15 @@
                             <option name="y" value="-11" />
                           </Point>
                         </option>
+                        <option name="myPositions">
+                          <map>
+                            <entry key="action_isPasswordForgetable_to_login">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
+                          </map>
+                        </option>
                       </LayoutPositions>
                     </value>
                   </entry>
@@ -140,6 +149,11 @@
                         </option>
                         <option name="myPositions">
                           <map>
+                            <entry key="action_login_to_isPasswordForgetable">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
                             <entry key="action_login_to_mainFragment">
                               <value>
                                 <LayoutPositions />
@@ -177,11 +191,6 @@
                               </value>
                             </entry>
                             <entry key="action_mainFragment_to_importImage">
-                              <value>
-                                <LayoutPositions />
-                              </value>
-                            </entry>
-                            <entry key="action_mainFragment_to_isPasswordForgetable">
                               <value>
                                 <LayoutPositions />
                               </value>
