@@ -2,7 +2,6 @@ package com.mihaiapps.securevault
 
 import android.Manifest
 import android.app.Activity
-import android.content.ClipData
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -34,7 +33,7 @@ class MainFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
-        if(!MainApplication.IsPinEnered) {
+        if(!MainApplication.isLoggedIn) {
             NavHostFragment.findNavController(this).navigate(R.id.action_mainFragment_to_login)
         }
 
@@ -65,6 +64,9 @@ class MainFragment : Fragment() {
                         startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQUEST_SELECT_IMAGE)
                     }.ask()
         }
+
+        go_to_login_btn.setOnClickListener{
+            NavHostFragment.findNavController(this).navigate(R.id.action_mainFragment_to_login)}
     }
 
     private lateinit var mCurrentPhotoPath: String

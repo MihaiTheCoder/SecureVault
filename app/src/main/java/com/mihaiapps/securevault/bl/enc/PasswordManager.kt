@@ -3,10 +3,12 @@ package com.mihaiapps.securevault.bl.enc
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
+import android.text.SpannableStringBuilder
 import com.mihaiapps.securevault.data.AppDatabaseFactory
 import com.mihaiapps.securevault.data.KeyValuePairEntity
 import java.security.SecureRandom
 import android.util.Base64
+import com.mihaiapps.securevault.MainApplication
 import com.mihaiapps.securevault.bl.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -117,6 +119,7 @@ class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreM
         keyValuePairDAO.insertAll(KeyValuePairEntity(PASSWORD_HASH,mac))
         val loginAttempts = LoginAttempts(0, Calendar.getInstance().time)
         upsertLoginAttempts(loginAttempts)
+        MainApplication.isLoggedIn = true
     }
 
     fun initDbWithPassword(pass:CharArray) {
@@ -128,21 +131,37 @@ class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreM
     }
 
     fun login(pass:CharSequence): Boolean {
+        if(getIsPasswordForgettable()) {
+            initDbWithPassword(convertToCharArray(pass))
+            if(!isDatabaseCorrectlyDecrypted()) {
+                increaseNumberOfAttempts()
+                return false
+            }
+        }
+
         val keyValuePairEntity: KeyValuePairEntity? = keyValuePairDAO.findById(PASSWORD_HASH)
         return if(keyValuePairEntity == null)
-
             false
         else {
             val isPasswordCorrect = hmac(pass).contentEquals(keyValuePairEntity.value)
 
-            if(isPasswordCorrect)
+            if(isPasswordCorrect){
                 upsertLoginAttempts(LoginAttempts(0, getCurrentDate()))
+                MainApplication.isLoggedIn = true
+            }
             else {
                 increaseNumberOfAttempts()
             }
 
             isPasswordCorrect
         }
+    }
+
+    private fun convertToCharArray(text: CharSequence): CharArray {
+        text as SpannableStringBuilder
+        val pass = CharArray(text.length)
+        text.getChars(0, text.length, pass, 0)
+        return pass
     }
 
     fun getPeriodToWaitForWrongPin(): Long {
@@ -202,6 +221,13 @@ class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreM
         val loginAttempts = getLoginAttempts()
         val newLoginAttempts = LoginAttempts(loginAttempts.numberOfRetries+1, getCurrentDate())
         upsertLoginAttempts(newLoginAttempts)
+    }
+
+    fun changePin(newPin: CharSequence) {
+        databaseFactory.changePin(convertToCharArray(newPin))
+        val mac: ByteArray = hmac(newPin)
+        keyValuePairDAO.update(KeyValuePairEntity(PASSWORD_HASH,mac))
+        MainApplication.isLoggedIn = true
     }
 
     data class LoginAttempts(val numberOfRetries: Int, val dateOfLastRetry: Date) {

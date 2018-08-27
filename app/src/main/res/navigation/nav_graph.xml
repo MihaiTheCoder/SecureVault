@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_login_to_isPasswordForgetable"
             app:destination="@id/isPasswordForgetable" />
+        <action
+            android:id="@+id/action_login_self"
+            app:destination="@id/login" />
     </fragment>
     <fragment
         android:id="@+id/mainFragment"

@@ -10,19 +10,18 @@ import android.view.inputmethod.InputMethodManager
 import kotlinx.android.synthetic.main.fragment_login.*
 import org.koin.android.ext.android.inject
 import android.os.Handler
-import android.text.SpannableStringBuilder
 import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
 import com.mihaiapps.securevault.bl.enc.PasswordManager
+import com.mihaiapps.securevault.data.AppDatabase
 
 class Login : Fragment() {
     private val passwordManager: PasswordManager by inject()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        MainApplication.IsPinEnered = true
 
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_login, container, false)
@@ -31,67 +30,84 @@ class Login : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if(passwordManager.getIsPinRegistered()) {
-            if(passwordManager.getIsPasswordForgettable()) {
-                loginPinForgettablePassword()
-            }
-            else {
-                loginPinUnforgettablePassword()
-            }
+        if (passwordManager.getIsPinRegistered()) {
+            attemptLogin { loginResult, _ -> onLoginAttempt(loginResult) }
             pin_label.text = getString(R.string.LOGIN_PIN)
-        }
-        else {
+        } else {
             if (passwordManager.hasDecidedIfPasswordIsForgettable())
                 registerPin()
             else
                 NavHostFragment.findNavController(this)
                         .navigate(R.id.action_login_to_isPasswordForgetable)
-
         }
+
+        change_password_btn.setOnClickListener { changePassword() }
+
+        zeroize_btn.setOnClickListener { zeroize() }
+    }
+
+    private fun zeroize() {
+        passwordManager.setIsPinRegistered(false)
+        MainApplication.getContext().deleteDatabase(AppDatabase.NAME)
+        NavHostFragment.findNavController(this).navigate(R.id.action_login_self)
     }
 
     private fun registerPin() {
+        enterAndConfirmNewPIN(getString(R.string.REGISTER_PIN)) {
+            passwordManager.registerPasswordInDatabase(it)
+            onCorrectPinEntered()
+        }
+    }
+
+    private fun enterAndConfirmNewPIN(initialLabel: String, onPasswordConfirmed: (CharSequence) -> Unit){
         showSoftKeyboard(txt_pin_entry)
-        pin_label.text = getString(R.string.REGISTER_PIN)
-        txt_pin_entry.setOnPinEnteredListener { text: CharSequence ->
-            passwordManager.rememberPassword(text)
+        pin_label.text = initialLabel
+        txt_pin_entry.text = null
+        txt_pin_entry.setOnPinEnteredListener { pass ->
+            passwordManager.rememberPassword(pass)
             txt_pin_entry.text = null
             pin_label.text = getString(R.string.RE_ENTER_PIN)
-            txt_pin_entry.setOnPinEnteredListener {text: CharSequence ->
-                if(passwordManager.verifyPinIsTheSame(text)) {
-                    passwordManager.registerPasswordInDatabase(text)
-                    onCorrectPinEntered()
+            txt_pin_entry.setOnPinEnteredListener {
+                if(!passwordManager.verifyPinIsTheSame(it)) {
+                    Toast.makeText(context,"PIN not the same, try again setting a new PIN",Toast.LENGTH_SHORT)
+                    txt_pin_entry.text = null
+                    enterAndConfirmNewPIN(initialLabel, onPasswordConfirmed)
                 } else {
-                    onWrongPinEntered()
+                    onPasswordConfirmed(it)
                 }
             }
         }
     }
 
-    private fun loginPinForgettablePassword() {
-        showSoftKeyboard(txt_pin_entry)
-        txt_pin_entry.setOnPinEnteredListener { text:CharSequence ->
-            isPinCorrectlyRegisteredInDb(text)
+    private fun changePassword() {
+        pin_label.text = "Old PIN"
+        attemptLogin {loginResult, oldPin ->
+            if(loginResult) {
+                enterAndConfirmNewPIN("NEW PIN") { newPin ->
+                    passwordManager.changePin(newPin)
+                    onCorrectPinEntered()
+                }
+            }
+            else {
+                onWrongPinEntered()
+                changePassword()
+            }
         }
+
     }
 
-    private fun loginPinUnforgettablePassword() {
+    private fun attemptLogin(processLogin: (Boolean, CharSequence)-> Unit){
         showSoftKeyboard(txt_pin_entry)
         txt_pin_entry.setOnPinEnteredListener { text: CharSequence ->
-            passwordManager.initDbWithPassword(convertToCharArray(text))
-            if (passwordManager.isDatabaseCorrectlyDecrypted()) {
-                isPinCorrectlyRegisteredInDb(text)
-            } else
-                onWrongPinEntered()
+            processLogin(passwordManager.login(text), text)
         }
     }
 
-    private fun isPinCorrectlyRegisteredInDb(text: CharSequence) {
-        if (passwordManager.login(text))
+    private fun onLoginAttempt(isLoginSuccessfully: Boolean) {
+        if(isLoginSuccessfully)
             onCorrectPinEntered()
-        else {
+        else
             onWrongPinEntered()
-        }
     }
 
     private fun onCorrectPinEntered() {
@@ -114,14 +130,7 @@ class Login : Fragment() {
         Toast.makeText(context, "DELAY $waitingPeriodInMilliSeconds", Toast.LENGTH_SHORT).show()
     }
 
-    private fun convertToCharArray(text: CharSequence): CharArray {
-        text as SpannableStringBuilder
-        val pass = CharArray(text.length)
-        text.getChars(0, text.length, pass, 0)
-        return pass
-    }
-
-    fun showSoftKeyboard(view: View) {
+    private fun showSoftKeyboard(view: View) {
         if (view.requestFocus()) {
             Handler().postDelayed({
                 val imm = context!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
@@ -134,7 +143,7 @@ class Login : Fragment() {
         }
     }
 
-    fun hideSoftKeyboard(view: View) {
+    private fun hideSoftKeyboard(view: View) {
         val imm = context!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
 
         imm!!.hideSoftInputFromWindow(view.windowToken,InputMethodManager.HIDE_IMPLICIT_ONLY)

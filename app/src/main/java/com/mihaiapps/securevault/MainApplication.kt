@@ -17,7 +17,7 @@ class MainApplication : Application() {
     companion object {
         private var sApplication: Application? = null
 
-        var IsPinEnered = false
+        var isLoggedIn = false
 
         fun getContext(): Context {
             return sApplication!!.applicationContext

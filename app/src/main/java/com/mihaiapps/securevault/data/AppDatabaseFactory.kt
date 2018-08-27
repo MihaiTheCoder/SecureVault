@@ -19,8 +19,6 @@ class AppDatabaseFactory {
         if(database != null)
             return database!!
 
-        //MainApplication.getContext().deleteDatabase(AppDatabase.NAME)
-
         var db =  Room.databaseBuilder(MainApplication.getContext(), AppDatabase::class.java, AppDatabase.NAME)
                 .allowMainThreadQueries()
 
@@ -49,6 +47,13 @@ class AppDatabaseFactory {
             } catch (e: Exception) {
                 Log.e(TAG,e.toString())
             }
+        }
+    }
+
+    fun changePin(newPin: CharArray) {
+        if(isDatabaseCorrectlyDecrypted()) {
+            val writableDatabase = get().openHelper.writableDatabase
+            SafeHelperFactory.rekey(writableDatabase,newPin)
         }
     }
 }
