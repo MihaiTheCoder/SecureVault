@@ -19,6 +19,9 @@
         <action
             android:id="@+id/action_login_self"
             app:destination="@id/login" />
+        <action
+            android:id="@+id/action_login_to_forgotPassword"
+            app:destination="@id/forgotPassword" />
     </fragment>
     <fragment
         android:id="@+id/mainFragment"
@@ -101,6 +104,15 @@
         tools:layout="@layout/fragment_is_password_forgettable" >
         <action
             android:id="@+id/action_isPasswordForgetable_to_login"
+            app:destination="@id/login" />
+    </fragment>
+    <fragment
+        android:id="@+id/forgotPassword"
+        android:name="com.mihaiapps.securevault.ForgotPassword"
+        android:label="fragment_forgot_password"
+        tools:layout="@layout/fragment_forgot_password" >
+        <action
+            android:id="@+id/action_forgotPassword_to_login"
             app:destination="@id/login" />
     </fragment>
 </navigation>

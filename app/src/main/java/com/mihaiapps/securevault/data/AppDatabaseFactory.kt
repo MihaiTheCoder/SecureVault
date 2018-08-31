@@ -30,8 +30,11 @@ class AppDatabaseFactory {
         return database!!
     }
 
-    fun setEncryption(pass: CharArray) {
-        encryptFactory = SafeHelperFactory(pass)
+    fun setEncryption(pass: CharArray?) {
+        if (pass != null)
+            encryptFactory = SafeHelperFactory(pass)
+        else
+            encryptFactory = null
     }
 
     fun isDatabaseCorrectlyDecrypted(): Boolean {
@@ -54,6 +57,11 @@ class AppDatabaseFactory {
         if(isDatabaseCorrectlyDecrypted()) {
             val writableDatabase = get().openHelper.writableDatabase
             SafeHelperFactory.rekey(writableDatabase,newPin)
+
         }
+    }
+
+    fun deleteDatabase() {
+        MainApplication.getContext().deleteDatabase(AppDatabase.NAME)
     }
 }

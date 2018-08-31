@@ -14,6 +14,7 @@ import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
 import com.github.florent37.runtimepermission.RuntimePermission.askPermission
+import com.mihaiapps.securevault.bl.ACTIVITY_RESULT_CODES
 import com.mihaiapps.securevault.bl.LocalFileReader
 import com.mihaiapps.securevault.bl.enc.EncryptUtils
 import com.mihaiapps.securevault.bl.enc.EncryptedFileManager
@@ -61,7 +62,7 @@ class MainFragment : Fragment() {
                         intent.type = "image/*"
                         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
                         intent.action = Intent.ACTION_GET_CONTENT
-                        startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQUEST_SELECT_IMAGE)
+                        startActivityForResult(Intent.createChooser(intent, "Select Picture"), ACTIVITY_RESULT_CODES.REQUEST_SELECT_IMAGE)
                     }.ask()
         }
 
@@ -94,17 +95,17 @@ class MainFragment : Fragment() {
 
             val photoURI = FileProvider.getUriForFile(context!!,FILE_PROVIDER_AUTHORITH, photoFile)
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-            startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO)
+            startActivityForResult(takePictureIntent, ACTIVITY_RESULT_CODES.REQUEST_TAKE_PHOTO)
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_TAKE_PHOTO) {
+        if (requestCode == ACTIVITY_RESULT_CODES.REQUEST_TAKE_PHOTO) {
             encryptedFileManager.encryptFile(mCurrentPhotoPath,
                     mCurrentPhotoPath + EncryptUtils.FILE_EXTENSION,
                     true)
         }
-        if(requestCode == REQUEST_SELECT_IMAGE) {
+        if(requestCode == ACTIVITY_RESULT_CODES.REQUEST_SELECT_IMAGE) {
             if(resultCode == Activity.RESULT_OK && data != null) {
                 val clipData = data.clipData
                 if(clipData != null) {
@@ -115,7 +116,6 @@ class MainFragment : Fragment() {
                     }
                 } else if(data.data != null) {
                     encryptLocalImage(data.data!!)
-
                 }
             }
 
@@ -134,8 +134,6 @@ class MainFragment : Fragment() {
     }
 
     companion object {
-        const val REQUEST_TAKE_PHOTO = 1
-        const val REQUEST_SELECT_IMAGE = 2
         const val FILE_PROVIDER_AUTHORITH = "com.mihaiapps.securevault.fileprovider"
 
     }

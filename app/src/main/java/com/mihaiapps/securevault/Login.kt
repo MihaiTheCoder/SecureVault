@@ -1,35 +1,41 @@
 package com.mihaiapps.securevault
 
-import android.content.Context
 import android.os.Bundle
-
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
-import kotlinx.android.synthetic.main.fragment_login.*
-import org.koin.android.ext.android.inject
-import android.os.Handler
-import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
 import com.mihaiapps.securevault.bl.enc.PasswordManager
 import com.mihaiapps.securevault.data.AppDatabase
+import kotlinx.android.synthetic.main.fragment_login.*
+import org.koin.android.ext.android.inject
 
-class Login : Fragment() {
+class Login : Fragment(){
+
     private val passwordManager: PasswordManager by inject()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-
-        // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_login, container, false)
-        return view
+        return inflater.inflate(R.layout.fragment_login, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        change_password_btn.setOnClickListener { changePassword() }
+
+        zeroize_btn.setOnClickListener { zeroize() }
+        forgot_password_redirect_btn.setOnClickListener{
+            NavHostFragment.findNavController(this).navigate(R.id.action_login_to_forgotPassword)
+        }
+
+        val shouldResetPassword = arguments?.getString(RESET_PASSWORD_ARG_NAME) == Login.RESET_PASSWORD_ARG_NAME
+        if(shouldResetPassword) {
+            resetPassword()
+            return
+        }
         if (passwordManager.getIsPinRegistered()) {
             attemptLogin { loginResult, _ -> onLoginAttempt(loginResult) }
             pin_label.text = getString(R.string.LOGIN_PIN)
@@ -40,15 +46,12 @@ class Login : Fragment() {
                 NavHostFragment.findNavController(this)
                         .navigate(R.id.action_login_to_isPasswordForgetable)
         }
-
-        change_password_btn.setOnClickListener { changePassword() }
-
-        zeroize_btn.setOnClickListener { zeroize() }
     }
 
     private fun zeroize() {
         passwordManager.setIsPinRegistered(false)
-        MainApplication.getContext().deleteDatabase(AppDatabase.NAME)
+        passwordManager.deletePasswordIsForgettableSetting()
+        passwordManager.deleteDatabase()
         NavHostFragment.findNavController(this).navigate(R.id.action_login_self)
     }
 
@@ -60,7 +63,7 @@ class Login : Fragment() {
     }
 
     private fun enterAndConfirmNewPIN(initialLabel: String, onPasswordConfirmed: (CharSequence) -> Unit){
-        showSoftKeyboard(txt_pin_entry)
+        txt_pin_entry.showSoftKeyboard()
         pin_label.text = initialLabel
         txt_pin_entry.text = null
         txt_pin_entry.setOnPinEnteredListener { pass ->
@@ -69,13 +72,20 @@ class Login : Fragment() {
             pin_label.text = getString(R.string.RE_ENTER_PIN)
             txt_pin_entry.setOnPinEnteredListener {
                 if(!passwordManager.verifyPinIsTheSame(it)) {
-                    Toast.makeText(context,"PIN not the same, try again setting a new PIN",Toast.LENGTH_SHORT)
+                    Toast.makeText(context,"PIN not the same, try again setting a new PIN",Toast.LENGTH_SHORT).show()
                     txt_pin_entry.text = null
                     enterAndConfirmNewPIN(initialLabel, onPasswordConfirmed)
                 } else {
                     onPasswordConfirmed(it)
                 }
             }
+        }
+    }
+
+    fun resetPassword() {
+        enterAndConfirmNewPIN("NEW PIN") { newPin ->
+            passwordManager.changePin(newPin)
+            onCorrectPinEntered()
         }
     }
 
@@ -93,11 +103,10 @@ class Login : Fragment() {
                 changePassword()
             }
         }
-
     }
 
     private fun attemptLogin(processLogin: (Boolean, CharSequence)-> Unit){
-        showSoftKeyboard(txt_pin_entry)
+        txt_pin_entry.showSoftKeyboard()
         txt_pin_entry.setOnPinEnteredListener { text: CharSequence ->
             processLogin(passwordManager.login(text), text)
         }
@@ -111,7 +120,8 @@ class Login : Fragment() {
     }
 
     private fun onCorrectPinEntered() {
-        hideSoftKeyboard(txt_pin_entry)
+        txt_pin_entry.hideSoftKeyboard()
+
         passwordManager.setIsPinRegistered(true)
         NavHostFragment.findNavController(this).navigate(R.id.action_login_to_mainFragment)
     }
@@ -130,26 +140,8 @@ class Login : Fragment() {
         Toast.makeText(context, "DELAY $waitingPeriodInMilliSeconds", Toast.LENGTH_SHORT).show()
     }
 
-    private fun showSoftKeyboard(view: View) {
-        if (view.requestFocus()) {
-            Handler().postDelayed({
-                val imm = context!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
-                val isKeyboardShown = imm!!.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
-                if(!isKeyboardShown)
-                    showSoftKeyboard(view)
-
-                Log.d("x", isKeyboardShown.toString())
-            }, 20)
-        }
-    }
-
-    private fun hideSoftKeyboard(view: View) {
-        val imm = context!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
-
-        imm!!.hideSoftInputFromWindow(view.windowToken,InputMethodManager.HIDE_IMPLICIT_ONLY)
-
-    }
-
     companion object {
+        const val RESET_PASSWORD_ARG_NAME = "RESET PASSWORD"
+        const val RESET_PASSWORD_ARG_VALUE = "RESET PASSWORD"
     }
 }

@@ -8,8 +8,11 @@ import com.mihaiapps.securevault.data.AppDatabaseFactory
 import com.mihaiapps.securevault.data.KeyValuePairEntity
 import java.security.SecureRandom
 import android.util.Base64
+import com.google.android.gms.tasks.Tasks
+import com.mihaiapps.securevault.ForgotPasswordUI
 import com.mihaiapps.securevault.MainApplication
 import com.mihaiapps.securevault.bl.*
+import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -24,6 +27,7 @@ class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreM
         const val PASSWORD_HASH = "PASSWORD_HASH"
         const val PASSWORD_HMAC_KEY = "PASSWORD_HMAC_KEY"
         const val LOGIN_ATTEMPTS = "LOGIN_ATTEMPTS"
+        const val SECRET_FORGOT_PASS_FILE_NAME = "passForgot.txt"
 
     }
 
@@ -51,6 +55,18 @@ class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreM
 
     fun hasDecidedIfPasswordIsForgettable(): Boolean {
         return preferences.contains(ALLOW_PASSWORD_FORGET)
+    }
+
+    fun deletePasswordIsForgettableSetting() {
+        if(hasDecidedIfPasswordIsForgettable()) {
+            val editor = preferences.edit()
+            editor.remove(ALLOW_PASSWORD_FORGET)
+            editor.apply()
+        }
+    }
+
+    fun deleteDatabase() {
+        databaseFactory.deleteDatabase()
     }
 
     fun getIsPasswordForgettable(): Boolean {
@@ -115,6 +131,9 @@ class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreM
     }
 
     fun registerPasswordInDatabase(pass:CharSequence) {
+        if(!getIsPasswordForgettable()) {
+            initDbWithPassword(convertToCharArray(pass))
+        }
         val mac: ByteArray = hmac(pass)
         keyValuePairDAO.insertAll(KeyValuePairEntity(PASSWORD_HASH,mac))
         val loginAttempts = LoginAttempts(0, Calendar.getInstance().time)
@@ -131,7 +150,7 @@ class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreM
     }
 
     fun login(pass:CharSequence): Boolean {
-        if(getIsPasswordForgettable()) {
+        if(!getIsPasswordForgettable()) {
             initDbWithPassword(convertToCharArray(pass))
             if(!isDatabaseCorrectlyDecrypted()) {
                 increaseNumberOfAttempts()
@@ -224,10 +243,40 @@ class PasswordManager(private val asymmetricKeyStoreManager: AsymmetricKeyStoreM
     }
 
     fun changePin(newPin: CharSequence) {
-        databaseFactory.changePin(convertToCharArray(newPin))
+        if (!getIsPasswordForgettable())
+            databaseFactory.changePin(convertToCharArray(newPin))
         val mac: ByteArray = hmac(newPin)
-        keyValuePairDAO.update(KeyValuePairEntity(PASSWORD_HASH,mac))
+        keyValuePairDAO.update(KeyValuePairEntity(PASSWORD_HASH, mac))
         MainApplication.isLoggedIn = true
+    }
+
+    fun createPasswordBackupFile(googleDriveHighLevelAPI: GoogleDriveHighLevelAPI, onFileCreated: () -> Unit) {
+        val secureRandom = SecureRandom()
+        val randomInt = secureRandom.nextInt()
+        val result = googleDriveHighLevelAPI.createFileInRoot(SECRET_FORGOT_PASS_FILE_NAME,
+                "text/plain",randomInt.toString().toByteArray(Charset.defaultCharset()))
+        result.continueWith {
+            setIsPasswordForgettable(true)
+            onFileCreated()
+        }
+    }
+
+    fun onForgotPassword(googleDriveHighLevelAPI: GoogleDriveHighLevelAPI, text: String,
+                         ui: ForgotPasswordUI) {
+        val content = googleDriveHighLevelAPI.getFileContentFromRoot(SECRET_FORGOT_PASS_FILE_NAME)
+        content.onSuccessTask { content: String? ->
+            if (content == null)
+                Tasks.forResult(false)
+            else
+                Tasks.forResult(content == text)
+        }.addOnSuccessListener {result: Boolean? ->
+            if(result == true) {
+                ui.changePass()
+            } else {
+                ui.reEnterFileContent()
+            }
+
+        }
     }
 
     data class LoginAttempts(val numberOfRetries: Int, val dateOfLastRetry: Date) {
