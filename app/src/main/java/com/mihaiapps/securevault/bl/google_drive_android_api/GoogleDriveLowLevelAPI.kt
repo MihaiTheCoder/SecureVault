@@ -1,4 +1,4 @@
-package com.mihaiapps.securevault.bl
+package com.mihaiapps.securevault.bl.google_drive_android_api
 
 import com.google.android.gms.drive.*
 import com.google.android.gms.tasks.Task
@@ -48,6 +48,9 @@ class GoogleDriveLowLevelAPI(private val driveClient: DriveClient, private val d
         val openFile = driveResourceClient.openFile(driveFile, DriveFile.MODE_WRITE_ONLY)
         return openFile.onSuccessTask { driveContents: DriveContents? ->
             driveContents!!.outputStream.use { it.write(content) }
+
+            val client = driveResourceClient.asGoogleApiClient()!!
+
             driveResourceClient.commitContents(driveContents,
                     MetadataChangeSet
                             .Builder()

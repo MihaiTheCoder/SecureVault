@@ -1,4 +1,4 @@
-package com.mihaiapps.securevault.bl
+package com.mihaiapps.securevault.bl.google_drive_android_api
 
 import com.google.android.gms.drive.DriveFile
 import com.google.android.gms.drive.DriveFolder
@@ -23,6 +23,10 @@ class GoogleDriveHighLevelAPI(private val activityGoogleDrive: ActivityGoogleDri
         return getGoogleDriveLowLevelAPI().onSuccessTask { googleDriveLowLevelAPI: GoogleDriveLowLevelAPI? ->
             googleDriveLowLevelAPI!!.createOrUpdateContent(directory, fileName, mimeType, content)
         }
+    }
+
+    fun shareFile() {
+        activityGoogleDrive.getDriveResourceClient().result.asGoogleApiClient()
     }
 
     private fun getGoogleDriveLowLevelAPI(): Task<GoogleDriveLowLevelAPI> {

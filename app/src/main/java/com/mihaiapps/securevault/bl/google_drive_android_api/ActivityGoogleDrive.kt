@@ -1,4 +1,4 @@
-package com.mihaiapps.securevault.bl
+package com.mihaiapps.securevault.bl.google_drive_android_api
 
 import android.app.Activity
 import android.content.Context
@@ -10,6 +10,9 @@ import com.google.android.gms.common.api.Scope
 import com.google.android.gms.drive.*
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.TaskCompletionSource
+import com.mihaiapps.googledriverestapiwrapper.ActivityResultDelegate
+import com.mihaiapps.googledriverestapiwrapper.ExtendableFragment
+import com.mihaiapps.securevault.bl.ACTIVITY_RESULT_CODES
 
 class ActivityGoogleDrive(private val context: Context, private val extendableFragment: ExtendableFragment) : ActivityResultDelegate {
 
@@ -54,6 +57,7 @@ class ActivityGoogleDrive(private val context: Context, private val extendableFr
             }
             signInProcessInProgress = false
         }
+
         else if(requestCode == ACTIVITY_RESULT_CODES.REQUEST_CODE_OPEN_ITEM) {
             if(resultCode != Activity.RESULT_OK) {
                 mOpenItemTaskSource?.setException(RuntimeException("Unable to load file"))

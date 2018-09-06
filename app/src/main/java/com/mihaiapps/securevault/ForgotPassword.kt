@@ -1,18 +1,16 @@
 package com.mihaiapps.securevault
 
-import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.NavHostFragment
-import com.mihaiapps.securevault.bl.ActivityGoogleDrive
-import com.mihaiapps.securevault.bl.ActivityResultDelegate
-import com.mihaiapps.securevault.bl.ExtendableFragment
-import com.mihaiapps.securevault.bl.GoogleDriveHighLevelAPI
+import com.mihaiapps.googledriverestapiwrapper.ActivityResultDelegate
+import com.mihaiapps.googledriverestapiwrapper.ExtendableFragment
+import com.mihaiapps.securevault.bl.google_drive_android_api.ActivityGoogleDrive
+import com.mihaiapps.securevault.bl.google_drive_android_api.GoogleDriveHighLevelAPI
 import com.mihaiapps.securevault.bl.enc.PasswordManager
 import kotlinx.android.synthetic.main.fragment_forgot_password.*
 import org.koin.android.ext.android.inject
@@ -56,7 +54,7 @@ class ForgotPassword : Fragment(), ExtendableFragment, ForgotPasswordUI {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        activityGoogleDrive= ActivityGoogleDrive(MainApplication.getContext(),this)
+        activityGoogleDrive= ActivityGoogleDrive(MainApplication.getContext(), this)
         googleDriveHighLevelAPI = GoogleDriveHighLevelAPI(activityGoogleDrive)
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_forgot_password, container, false)
