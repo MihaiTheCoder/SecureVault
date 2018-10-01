@@ -26,22 +26,20 @@ import org.koin.android.ext.android.inject
 
 class IsPasswordForgettable : Fragment(), ExtendableFragment {
 
+    private lateinit var activityGoogleDrive: ActivityGoogleDrive
+    private lateinit var googleDriveHighLevelAPI: GoogleDriveHighLevelAPI
+
     private val listeners = ArrayList<ActivityResultDelegate>()
     override fun setOnActivityResultListener(activityResultDelegate: ActivityResultDelegate) {
         listeners.add(activityResultDelegate)
     }
-
-    private lateinit var activityGoogleDrive: ActivityGoogleDrive
-    private lateinit var googleDriveHighLevelAPI: GoogleDriveHighLevelAPI
-    private lateinit var restApiLowLevelTask: Task<RestDriveApiLowLevel>
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         for(listener in listeners)
             listener.onActivityResult(requestCode, resultCode, data)
     }
 
-    override open fun startActivityForResult(intent: Intent?, requestCode: Int) {
+    open override fun startActivityForResult(intent: Intent?, requestCode: Int) {
         super.startActivityForResult(intent, requestCode)
     }
 
@@ -51,19 +49,23 @@ class IsPasswordForgettable : Fragment(), ExtendableFragment {
                               savedInstanceState: Bundle?): View? {
         activityGoogleDrive= ActivityGoogleDrive(MainApplication.getContext(), this)
         googleDriveHighLevelAPI = GoogleDriveHighLevelAPI(activityGoogleDrive)
-        val restApiFactory = RestDriveApiLowLevelFactory(context!!,this, REQUEST_CODE_SIGN_IN)
+        doSomething()
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_is_password_forgettable, container, false)
+    }
+
+    fun doSomething() {
+        val restApiFactory = RestDriveApiLowLevelFactory(context!!, this, REQUEST_CODE_SIGN_IN)
         val restApiLowLevelTask = restApiFactory.get()
         restApiLowLevelTask.onSuccessTask { restDriveApiLowLevel: RestDriveApiLowLevel? ->
             try {
                 AsyncTask.execute {
                     val values = restDriveApiLowLevel!!.getRootDirectory()
                     val file = restDriveApiLowLevel.getFileMetadata(null, "passForgot.txt")
-                    if(file != null) {
+                    if (file != null) {
                         restDriveApiLowLevel.shareFileWithEmails(file, "mihai.petrutiu@qubiz.com")
                     }
-                    val x = restDriveApiLowLevel.downloadByName(null,"passForgot.txt")
-
-                    restDriveApiLowLevel.getChanges()
+                    val x = restDriveApiLowLevel.downloadByName(null, "passForgot.txt")
                 }
 
             } catch (e: Exception) {
@@ -71,8 +73,6 @@ class IsPasswordForgettable : Fragment(), ExtendableFragment {
             }
             Tasks.forResult(2)
         }
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_is_password_forgettable, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

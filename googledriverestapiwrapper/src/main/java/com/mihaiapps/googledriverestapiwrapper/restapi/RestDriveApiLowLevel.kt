@@ -1,12 +1,15 @@
 package com.mihaiapps.googledriverestapiwrapper.restapi
 
+import com.google.api.client.http.AbstractInputStreamContent
 import com.google.api.client.http.ByteArrayContent
+import com.google.api.client.http.FileContent
+import com.google.api.client.http.InputStreamContent
 import com.google.api.services.drive.Drive
-import com.google.api.services.drive.model.Channel
 import com.google.api.services.drive.model.File
 import com.google.api.services.drive.model.FileList
 import com.google.api.services.drive.model.Permission
 import java.io.FileOutputStream
+import java.io.InputStream
 
 class RestDriveApiLowLevel(private val drive: Drive) {
 
@@ -30,13 +33,31 @@ class RestDriveApiLowLevel(private val drive: Drive) {
 
     fun uploadByName(parentFolderId: String?, fileName: String, data:ByteArray, space: String= DEFAULT_SPACE): File? {
         val content = ByteArrayContent(CONTENT_TYPE, data)
+
+        return uploadByName(parentFolderId, fileName, content, space)
+    }
+
+    fun uploadByName(parentFolderId: String?, fileName: String, file: java.io.File, space: String= DEFAULT_SPACE): File? {
+        val content = FileContent(CONTENT_TYPE, file)
+
+        return uploadByName(parentFolderId, fileName, content, space)
+    }
+
+    fun uploadByName(parentFolderId: String?, fileName: String, inputStream: InputStream, space: String= DEFAULT_SPACE): File? {
+        val content = InputStreamContent(CONTENT_TYPE, inputStream)
+
+        return uploadByName(parentFolderId, fileName, content, space)
+    }
+
+    private fun uploadByName(parentFolderId: String?, fileName: String, content: AbstractInputStreamContent, space: String= DEFAULT_SPACE): File? {
         val existingFile = getFileMetadata(parentFolderId, fileName, space)
         if (existingFile != null)
             return drive.files().update(existingFile.id, null, content).execute()
 
         val newFileMetadata = File()
         newFileMetadata.name = fileName
-        newFileMetadata.parents = if (parentFolderId == null) listOf(space) else listOf(space, parentFolderId)
+        setParents(parentFolderId, newFileMetadata, space)
+        //newFileMetadata.parents = if (parentFolderId == null) listOf(space) else listOf(space, parentFolderId)
 
         return drive.files()
                 .create(newFileMetadata, content)
@@ -45,10 +66,8 @@ class RestDriveApiLowLevel(private val drive: Drive) {
     }
 
     fun shareFileWithEmails(file: File, vararg emails: String ): List<Permission> {
-
         val permissions = emails.map { getReadPermissionToUser(it) }
-        val createdPermissions = permissions.map { drive.permissions().create(file.id, it).execute() }
-        return createdPermissions
+        return permissions.map { drive.permissions().create(file.id, it).execute() }
     }
 
     private fun getReadPermissionToUser(email: String) =
@@ -89,6 +108,21 @@ class RestDriveApiLowLevel(private val drive: Drive) {
                 .execute()
                 .files
                 .firstOrNull()
+    }
+
+    fun createFolder(parentFolderId: String?, folderName: String, space: String = DEFAULT_SPACE): File? {
+        val fileMetadata = File()
+        fileMetadata.name = folderName
+        fileMetadata.mimeType = "application/vnd.google-apps.folder"
+        setParents(parentFolderId, fileMetadata, space)
+        //fileMetadata.parents = if (parentFolderId == null) listOf(space) else listOf(space, parentFolderId)
+        return drive.files().create(fileMetadata).setFields(UPLOAD_FIELDS).execute()
+    }
+
+    private fun setParents(parentFolderId: String?, fileMetadata: File, space: String) {
+        if (parentFolderId != null) {
+            fileMetadata.parents = listOf(parentFolderId)//listOf(space, parentFolderId)
+        }
     }
 
     private fun withParentQuery(parentId: String) = "'$parentId' in parents"

@@ -59,7 +59,7 @@ abstract class GoogleSignInFactory<T>(private val context: Context,
 
         signInProcessInProgress = true
         val signInAccount = GoogleSignIn.getLastSignedInAccount(context)
-        if (signInAccount?.grantedScopes?.containsAll(requiredScopes) == true && signInAccount.account != null) {
+        if (signInAccount?.grantedScopes?.containsAll(requiredScopes) == true && signInAccount.account != null && !signInAccount.isExpired) {
             signInTaskSource.setResult(initializeClient(signInAccount))
         } else {
             val signInOptionsBuilder =
