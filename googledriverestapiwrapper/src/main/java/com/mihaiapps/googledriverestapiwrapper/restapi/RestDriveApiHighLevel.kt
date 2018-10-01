@@ -44,7 +44,6 @@ class RestDriveApiHighLevel(private val context: Context,
             Log.e("RestDriveApiHighLevel", "Error while sharing the file", e)
             throw e
         }
-
     }
 
     private fun <TResult> useClientAsync(useClientFunc: (RestDriveApiLowLevel) -> Task<TResult>): Task<TResult> {
@@ -56,7 +55,6 @@ class RestDriveApiHighLevel(private val context: Context,
             }
             completionSource.task
         }
-
         return completionSource.task.onSuccessTask { task: Task<TResult>? -> task!! }
     }
 
