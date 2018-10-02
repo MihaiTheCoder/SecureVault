@@ -2,7 +2,6 @@ package com.mihaiapps.securevault
 
 import android.content.Intent
 import android.graphics.Bitmap
-import android.os.AsyncTask
 import android.os.Bundle
 import android.transition.TransitionInflater
 import android.view.LayoutInflater
@@ -13,17 +12,14 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.transition.Transition
 import com.github.chrisbanes.photoview.PhotoView
-import com.google.android.gms.tasks.Tasks
-import com.mihaiapps.googledriverestapiwrapper.ActivityResultDelegate
-import com.mihaiapps.googledriverestapiwrapper.ExtendableFragment
+import com.mihaiapps.googleloginwrapper.ActivityResultDelegate
+import com.mihaiapps.googleloginwrapper.ExtendableFragment
 import com.mihaiapps.googledriverestapiwrapper.restapi.RestDriveApiHighLevel
-import com.mihaiapps.googledriverestapiwrapper.restapi.RestDriveApiLowLevelFactory
 import com.mihaiapps.securevault.bl.ACTIVITY_RESULT_CODES
 import com.mihaiapps.securevault.bl.ImageModel
 import com.mihaiapps.securevault.bl.LocalFileReader
 import kotlinx.android.synthetic.main.fragment_image_detail.*
 import org.koin.android.ext.android.inject
-import java.nio.file.Path
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -40,14 +36,14 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  *
  */
-class ImageDetail : Fragment(), ExtendableFragment {
+class ImageDetail : Fragment(), com.mihaiapps.googleloginwrapper.ExtendableFragment {
     // TODO: Rename and change types of parameters
     private var image: ImageModel? = null
     private val googleHighLevelRestApi by lazy { RestDriveApiHighLevel(context!!, this, ACTIVITY_RESULT_CODES.REQUEST_CODE_SIGN_IN) }
     private val localFileReader by inject<LocalFileReader>()
 
-    private val listeners = ArrayList<ActivityResultDelegate>()
-    override fun setOnActivityResultListener(activityResultDelegate: ActivityResultDelegate) {
+    private val listeners = ArrayList<com.mihaiapps.googleloginwrapper.ActivityResultDelegate>()
+    override fun setOnActivityResultListener(activityResultDelegate: com.mihaiapps.googleloginwrapper.ActivityResultDelegate) {
         listeners.add(activityResultDelegate)
     }
 

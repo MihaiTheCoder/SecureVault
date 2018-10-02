@@ -1,4 +1,4 @@
-package com.mihaiapps.googledriverestapiwrapper
+package com.mihaiapps.googleloginwrapper
 
 import android.app.Activity
 import android.content.Context
@@ -12,9 +12,9 @@ import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.TaskCompletionSource
 
 abstract class GoogleSignInFactory<T>(private val context: Context,
-                                   private val extendableFragment: ExtendableFragment,
-                                   private val requiredScopes: Set<Scope>,
-                                   private val signInCode: Int) : ActivityResultDelegate {
+                                      private val extendableFragment: ExtendableFragment,
+                                      private val requiredScopes: Set<Scope>,
+                                      private val signInCode: Int) : ActivityResultDelegate {
 
     private fun onSignInError(error: Exception) {
         signInTaskSource.trySetException(error)
@@ -62,9 +62,7 @@ abstract class GoogleSignInFactory<T>(private val context: Context,
         if (signInAccount?.grantedScopes?.containsAll(requiredScopes) == true && signInAccount.account != null && !signInAccount.isExpired) {
             signInTaskSource.setResult(initializeClient(signInAccount))
         } else {
-            val signInOptionsBuilder =
-                    GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                            .requestEmail()
+            val signInOptionsBuilder = getGoogleSignInOptions()
             for (scope in requiredScopes)
                 signInOptionsBuilder.requestScopes(scope)
             val signInOptions = signInOptionsBuilder.build()
@@ -72,6 +70,11 @@ abstract class GoogleSignInFactory<T>(private val context: Context,
             extendableFragment.startActivityForResult(googleSignIn.signInIntent, signInCode)
         }
         return signInTaskSource.task
+    }
+
+    protected open fun getGoogleSignInOptions(): GoogleSignInOptions.Builder {
+        return GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
     }
 
 

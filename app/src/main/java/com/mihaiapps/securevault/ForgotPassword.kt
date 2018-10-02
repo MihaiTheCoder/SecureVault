@@ -7,8 +7,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.NavHostFragment
-import com.mihaiapps.googledriverestapiwrapper.ActivityResultDelegate
-import com.mihaiapps.googledriverestapiwrapper.ExtendableFragment
+import com.mihaiapps.googleloginwrapper.ActivityResultDelegate
+import com.mihaiapps.googleloginwrapper.ExtendableFragment
 import com.mihaiapps.securevault.bl.google_drive_android_api.ActivityGoogleDrive
 import com.mihaiapps.securevault.bl.google_drive_android_api.GoogleDriveHighLevelAPI
 import com.mihaiapps.securevault.bl.enc.PasswordManager
@@ -30,10 +30,10 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  *
  */
-class ForgotPassword : Fragment(), ExtendableFragment, ForgotPasswordUI {
+class ForgotPassword : Fragment(), com.mihaiapps.googleloginwrapper.ExtendableFragment, ForgotPasswordUI {
 
-    private val listeners = ArrayList<ActivityResultDelegate>()
-    override fun setOnActivityResultListener(activityResultDelegate: ActivityResultDelegate) {
+    private val listeners = ArrayList<com.mihaiapps.googleloginwrapper.ActivityResultDelegate>()
+    override fun setOnActivityResultListener(activityResultDelegate: com.mihaiapps.googleloginwrapper.ActivityResultDelegate) {
         listeners.add(activityResultDelegate)
     }
 

@@ -65,5 +65,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     testImplementation 'junit:junit:4.12'
+    implementation project(path: ':googleloginwrapper')
     implementation project(path: ':googledriverestapiwrapper')
+
 }

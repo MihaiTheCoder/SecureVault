@@ -1,4 +1,4 @@
-package com.mihaiapps.googledriverestapiwrapper
+package com.mihaiapps.googleloginwrapper
 
 import android.content.Intent
 

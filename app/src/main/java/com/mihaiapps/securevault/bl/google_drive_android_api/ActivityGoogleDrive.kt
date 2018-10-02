@@ -10,11 +10,11 @@ import com.google.android.gms.common.api.Scope
 import com.google.android.gms.drive.*
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.TaskCompletionSource
-import com.mihaiapps.googledriverestapiwrapper.ActivityResultDelegate
-import com.mihaiapps.googledriverestapiwrapper.ExtendableFragment
+import com.mihaiapps.googleloginwrapper.ActivityResultDelegate
+import com.mihaiapps.googleloginwrapper.ExtendableFragment
 import com.mihaiapps.securevault.bl.ACTIVITY_RESULT_CODES
 
-class ActivityGoogleDrive(private val context: Context, private val extendableFragment: ExtendableFragment) : ActivityResultDelegate {
+class ActivityGoogleDrive(private val context: Context, private val extendableFragment: com.mihaiapps.googleloginwrapper.ExtendableFragment) : com.mihaiapps.googleloginwrapper.ActivityResultDelegate {
 
     init {
         extendableFragment.setOnActivityResultListener(this)

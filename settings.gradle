@@ -1,1 +1,1 @@
-include ':app', ':googledriverestapiwrapper', ':firebasewrapper'
+include ':app', ':googledriverestapiwrapper', ':googleloginwrapper', ':firebasewrapper'

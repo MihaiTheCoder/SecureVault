@@ -10,10 +10,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.NavHostFragment
-import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
-import com.mihaiapps.googledriverestapiwrapper.ActivityResultDelegate
-import com.mihaiapps.googledriverestapiwrapper.ExtendableFragment
+import com.mihaiapps.googleloginwrapper.ActivityResultDelegate
+import com.mihaiapps.googleloginwrapper.ExtendableFragment
 import com.mihaiapps.googledriverestapiwrapper.restapi.RestDriveApiLowLevel
 import com.mihaiapps.googledriverestapiwrapper.restapi.RestDriveApiLowLevelFactory
 import com.mihaiapps.securevault.bl.ACTIVITY_RESULT_CODES.Companion.REQUEST_CODE_SIGN_IN
@@ -24,13 +23,13 @@ import kotlinx.android.synthetic.main.fragment_is_password_forgettable.*
 import org.koin.android.ext.android.inject
 
 
-class IsPasswordForgettable : Fragment(), ExtendableFragment {
+class IsPasswordForgettable : Fragment(), com.mihaiapps.googleloginwrapper.ExtendableFragment {
 
     private lateinit var activityGoogleDrive: ActivityGoogleDrive
     private lateinit var googleDriveHighLevelAPI: GoogleDriveHighLevelAPI
 
-    private val listeners = ArrayList<ActivityResultDelegate>()
-    override fun setOnActivityResultListener(activityResultDelegate: ActivityResultDelegate) {
+    private val listeners = ArrayList<com.mihaiapps.googleloginwrapper.ActivityResultDelegate>()
+    override fun setOnActivityResultListener(activityResultDelegate: com.mihaiapps.googleloginwrapper.ActivityResultDelegate) {
         listeners.add(activityResultDelegate)
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

@@ -9,8 +9,8 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.mihaiapps.googledriverestapiwrapper.BuildConfig
-import com.mihaiapps.googledriverestapiwrapper.ExtendableFragment
-import com.mihaiapps.googledriverestapiwrapper.GoogleSignInFactory
+import com.mihaiapps.googleloginwrapper.ExtendableFragment
+import com.mihaiapps.googleloginwrapper.GoogleSignInFactory
 
 class RestDriveApiFactory(private val context: Context, extendableFragment: ExtendableFragment, signInCode: Int):
         GoogleSignInFactory<Drive>(context,extendableFragment, requiredDriveScopes,signInCode) {
