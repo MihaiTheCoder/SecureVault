@@ -9,12 +9,16 @@ import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.TaskCompletionSource
 import com.google.android.gms.tasks.Tasks
 import com.google.api.services.drive.model.File
+import com.mihaiapps.googleloginwrapper.GoogleSignInFactory
 import java.io.InputStream
 
 class RestDriveApiHighLevel(private val context: Context,
                             private val extendableFragment: com.mihaiapps.googleloginwrapper.ExtendableFragment,
-                            private val signInCode: Int) {
-    private val restApiLowLevelTask  by lazy { RestDriveApiLowLevelFactory(context, extendableFragment, signInCode).get() }
+                            private val signInCode: Int,
+                            private val googleSignInFactory: GoogleSignInFactory) {
+
+
+    private val restApiLowLevelTask  by lazy { RestDriveApiLowLevelFactory(context, extendableFragment, signInCode, googleSignInFactory).get() }
     val mHandlerThread = HandlerThread("HandlerThread")
 
     private val mainHandler by lazy { Handler(mHandlerThread.looper) }

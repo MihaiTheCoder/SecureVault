@@ -1,81 +1,43 @@
 package com.mihaiapps.googleloginwrapper
 
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
-
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Scope
 import com.google.android.gms.tasks.Task
-import com.google.android.gms.tasks.TaskCompletionSource
 
-abstract class GoogleSignInFactory<T>(private val context: Context,
-                                      private val extendableFragment: ExtendableFragment,
-                                      private val requiredScopes: Set<Scope>,
-                                      private val signInCode: Int) : ActivityResultDelegate {
+class GoogleSignInFactory(googleSignInUsecases: Set<GoogleSignInUsecase>) {
 
-    private fun onSignInError(error: Exception) {
-        signInTaskSource.trySetException(error)
-    }
+    private val requiredScopes: HashSet<Scope> = HashSet()
 
-    abstract fun initializeClient(signInAccount: GoogleSignInAccount): T
-    private val signInTaskSource = TaskCompletionSource<T>()
+    private val googleSignInOptionsBuilder: GoogleSignInOptions.Builder
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if(requestCode != signInCode) {
-            signInProcessInProgress = false
-            return
-        }
-
-        if(resultCode != Activity.RESULT_OK) {
-            onSignInError(RuntimeException("RESULT CODE NOT OK-ResultCode:$resultCode"))
-            signInProcessInProgress = false
-            return
-        }
-
-        val accountTask = GoogleSignIn.getSignedInAccountFromIntent(data)
-        if(accountTask.isSuccessful)
-            signInTaskSource.setResult(initializeClient(accountTask.result))
-        else {
-            if (accountTask.exception != null)
-                onSignInError(accountTask.exception!!)
-            else
-                onSignInError(RuntimeException("SignIn not successful, it's not me boss"))
-        }
-        signInProcessInProgress = false
-    }
-
+    private var googleSignInWrapper: GoogleSignInWrapper? = null
 
     init {
-        extendableFragment.setOnActivityResultListener(this)
-    }
-
-    private var signInProcessInProgress = false
-    fun signIn(): Task<T> {
-        if (signInProcessInProgress)
-            return signInTaskSource.task
-
-        signInProcessInProgress = true
-        val signInAccount = GoogleSignIn.getLastSignedInAccount(context)
-        if (signInAccount?.grantedScopes?.containsAll(requiredScopes) == true && signInAccount.account != null && !signInAccount.isExpired) {
-            signInTaskSource.setResult(initializeClient(signInAccount))
-        } else {
-            val signInOptionsBuilder = getGoogleSignInOptions()
-            for (scope in requiredScopes)
-                signInOptionsBuilder.requestScopes(scope)
-            val signInOptions = signInOptionsBuilder.build()
-            val googleSignIn = GoogleSignIn.getClient(context, signInOptions)!!
-            extendableFragment.startActivityForResult(googleSignIn.signInIntent, signInCode)
+        for (useCase in googleSignInUsecases) {
+            requiredScopes.addAll(useCase.getRequiredScopes())
         }
-        return signInTaskSource.task
+
+        var signInOptionsBuilder = getGoogleSignInOptionsBuilder()
+        for (useCase in googleSignInUsecases) {
+            signInOptionsBuilder = useCase.addRequestToBuilder(signInOptionsBuilder)
+        }
+
+        googleSignInOptionsBuilder = signInOptionsBuilder
     }
 
-    protected open fun getGoogleSignInOptions(): GoogleSignInOptions.Builder {
+    fun get(context: Context, extendableFragment: ExtendableFragment, signInCode: Int): Task<GoogleSignInAccount> {
+        var wrapper = googleSignInWrapper
+        if (wrapper != null)
+            return wrapper.signIn()
+        wrapper = GoogleSignInWrapper(context, extendableFragment, signInCode, requiredScopes, googleSignInOptionsBuilder)
+        googleSignInWrapper = wrapper
+        return wrapper.signIn()
+    }
+
+    fun getGoogleSignInOptionsBuilder(): GoogleSignInOptions.Builder {
         return GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
     }
-
-
 }

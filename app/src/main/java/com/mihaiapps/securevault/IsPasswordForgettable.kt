@@ -15,6 +15,7 @@ import com.mihaiapps.googleloginwrapper.ActivityResultDelegate
 import com.mihaiapps.googleloginwrapper.ExtendableFragment
 import com.mihaiapps.googledriverestapiwrapper.restapi.RestDriveApiLowLevel
 import com.mihaiapps.googledriverestapiwrapper.restapi.RestDriveApiLowLevelFactory
+import com.mihaiapps.googleloginwrapper.GoogleSignInFactory
 import com.mihaiapps.securevault.bl.ACTIVITY_RESULT_CODES.Companion.REQUEST_CODE_SIGN_IN
 import com.mihaiapps.securevault.bl.google_drive_android_api.ActivityGoogleDrive
 import com.mihaiapps.securevault.bl.google_drive_android_api.GoogleDriveHighLevelAPI
@@ -27,6 +28,7 @@ class IsPasswordForgettable : Fragment(), com.mihaiapps.googleloginwrapper.Exten
 
     private lateinit var activityGoogleDrive: ActivityGoogleDrive
     private lateinit var googleDriveHighLevelAPI: GoogleDriveHighLevelAPI
+    private val googleSignInFactory: GoogleSignInFactory by inject()
 
     private val listeners = ArrayList<com.mihaiapps.googleloginwrapper.ActivityResultDelegate>()
     override fun setOnActivityResultListener(activityResultDelegate: com.mihaiapps.googleloginwrapper.ActivityResultDelegate) {
@@ -54,7 +56,7 @@ class IsPasswordForgettable : Fragment(), com.mihaiapps.googleloginwrapper.Exten
     }
 
     fun doSomething() {
-        val restApiFactory = RestDriveApiLowLevelFactory(context!!, this, REQUEST_CODE_SIGN_IN)
+        val restApiFactory = RestDriveApiLowLevelFactory(context!!, this, REQUEST_CODE_SIGN_IN, googleSignInFactory)
         val restApiLowLevelTask = restApiFactory.get()
         restApiLowLevelTask.onSuccessTask { restDriveApiLowLevel: RestDriveApiLowLevel? ->
             try {

@@ -10,10 +10,11 @@ import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.mihaiapps.googledriverestapiwrapper.BuildConfig
 import com.mihaiapps.googleloginwrapper.ExtendableFragment
-import com.mihaiapps.googleloginwrapper.GoogleSignInFactory
+import com.mihaiapps.googleloginwrapper.GoogleSignInFactoryOld
 
+@Deprecated("Use RestDriveApiLowLevelFactory instead", ReplaceWith("RestDriveApiLowLevelFactory "),DeprecationLevel.ERROR)
 class RestDriveApiFactory(private val context: Context, extendableFragment: ExtendableFragment, signInCode: Int):
-        GoogleSignInFactory<Drive>(context,extendableFragment, requiredDriveScopes,signInCode) {
+        GoogleSignInFactoryOld<Drive>(context,extendableFragment, requiredDriveScopes,signInCode) {
 
 
     override fun initializeClient(signInAccount: GoogleSignInAccount): Drive {

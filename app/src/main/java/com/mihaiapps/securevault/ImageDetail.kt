@@ -15,6 +15,7 @@ import com.github.chrisbanes.photoview.PhotoView
 import com.mihaiapps.googleloginwrapper.ActivityResultDelegate
 import com.mihaiapps.googleloginwrapper.ExtendableFragment
 import com.mihaiapps.googledriverestapiwrapper.restapi.RestDriveApiHighLevel
+import com.mihaiapps.googleloginwrapper.GoogleSignInFactory
 import com.mihaiapps.securevault.bl.ACTIVITY_RESULT_CODES
 import com.mihaiapps.securevault.bl.ImageModel
 import com.mihaiapps.securevault.bl.LocalFileReader
@@ -39,7 +40,8 @@ private const val ARG_PARAM2 = "param2"
 class ImageDetail : Fragment(), com.mihaiapps.googleloginwrapper.ExtendableFragment {
     // TODO: Rename and change types of parameters
     private var image: ImageModel? = null
-    private val googleHighLevelRestApi by lazy { RestDriveApiHighLevel(context!!, this, ACTIVITY_RESULT_CODES.REQUEST_CODE_SIGN_IN) }
+    private val googleSignInFactory: GoogleSignInFactory by inject()
+    private val googleHighLevelRestApi by lazy { RestDriveApiHighLevel(context!!, this, ACTIVITY_RESULT_CODES.REQUEST_CODE_SIGN_IN, googleSignInFactory) }
     private val localFileReader by inject<LocalFileReader>()
 
     private val listeners = ArrayList<com.mihaiapps.googleloginwrapper.ActivityResultDelegate>()
